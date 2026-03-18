@@ -48,13 +48,13 @@ steps:
 ### Project-level `.npmrc`
 
 ```yaml
-  - name: Configure npm auth (project)
-    uses: sketch7/npm-auth-action@v1
-    with:
-      scope: "@arcane"
-      registry: "https://f.feedz.io/sketch7/arcane/npm/"
-      token: ${{ secrets.NPM_TOKEN }}
-      path: "packages/my-app"
+- name: Configure npm auth (project)
+  uses: sketch7/npm-auth-action@v1
+  with:
+    scope: "@arcane"
+    registry: "https://f.feedz.io/sketch7/arcane/npm/"
+    token: ${{ secrets.NPM_TOKEN }}
+    path: "packages/my-app"
 ```
 
 ## Publishing a New Release
