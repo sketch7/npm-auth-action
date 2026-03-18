@@ -4,5 +4,9 @@ import { run } from "./main"
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 run().catch(error => {
-	if (error instanceof Error) core.setFailed(error.message)
+	if (error instanceof Error) {
+		core.setFailed(error.message)
+	} else {
+		core.setFailed(String(error ?? "Unknown error"))
+	}
 })
