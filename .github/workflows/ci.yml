@@ -86,8 +86,6 @@ jobs:
         id: test-action
         uses: ./
         with:
-          preid: "dev"
-
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.version }}"
+          scope: "@arcane"
+          registry: "https://f.feedz.io/sketch7/arcane/npm/"
+          token: "test-token"

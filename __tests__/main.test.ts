@@ -2,87 +2,47 @@ import * as cp from "child_process"
 import * as path from "path"
 import * as process from "process"
 import { describe, expect, test } from "vitest"
-import { isPrerelease } from "../src/utils"
+import { normalizeScope, normalizeRegistry, registryToAuthKey } from "../src/main"
 
-describe("isPrerelease", () => {
-	const dataset = [
-		// prerelease
-		{
-			name: "Preid branch match",
-			input: {
-				branch: "master",
-				preidBranches: ["master", "develop"],
-				isForcePreid: false,
-				isForceStable: false
-			},
-			expected: true
-		},
-		{
-			name: "Force preid",
-			input: {
-				branch: "ci",
-				preidBranches: ["master", "develop"],
-				isForcePreid: true,
-				isForceStable: false
-			},
-			expected: true
-		},
-		{
-			name: "Force preid > force stable",
-			input: {
-				branch: "ci",
-				preidBranches: ["master", "develop"],
-				isForcePreid: true,
-				isForceStable: true
-			},
-			expected: true
-		},
-		// stable
-		{
-			name: "Non matching preid branch",
-			input: {
-				branch: "master",
-				preidBranches: ["develop"],
-				isForcePreid: false,
-				isForceStable: false
-			},
-			expected: false
-		},
-		{
-			name: "Force stable",
-			input: {
-				branch: "master",
-				preidBranches: ["master"],
-				isForcePreid: false,
-				isForceStable: true
-			},
-			expected: false
-		}
-	]
+describe("normalizeScope", () => {
+	test.each([
+		{ input: "arcane", expected: "@arcane" },
+		{ input: "@arcane", expected: "@arcane" },
+		{ input: "MyOrg", expected: "@MyOrg" },
+	])("given $input should be $expected", ({ input, expected }) => {
+		expect(normalizeScope(input)).toBe(expected)
+	})
+})
 
-	for (const { name, input, expected } of dataset) {
-		test(`given ${name} (${JSON.stringify(input)}) should be ${expected}`, () => {
-			expect(isPrerelease(input)).toBe(expected)
-		})
-	}
+describe("normalizeRegistry", () => {
+	test.each([
+		{ input: "https://f.feedz.io/sketch7/arcane/npm", expected: "https://f.feedz.io/sketch7/arcane/npm/" },
+		{ input: "https://f.feedz.io/sketch7/arcane/npm/", expected: "https://f.feedz.io/sketch7/arcane/npm/" },
+		{ input: "http://registry.example.com/npm", expected: "http://registry.example.com/npm/" },
+	])("given $input should be $expected", ({ input, expected }) => {
+		expect(normalizeRegistry(input)).toBe(expected)
+	})
+})
+
+describe("registryToAuthKey", () => {
+	test.each([
+		{ input: "https://f.feedz.io/sketch7/arcane/npm/", expected: "//f.feedz.io/sketch7/arcane/npm/" },
+		{ input: "http://registry.example.com/npm/", expected: "//registry.example.com/npm/" },
+		{ input: "https://f.feedz.io/sketch7/arcane/npm", expected: "//f.feedz.io/sketch7/arcane/npm/" },
+	])("given $input should be $expected", ({ input, expected }) => {
+		expect(registryToAuthKey(input)).toBe(expected)
+	})
 })
 
 // shows how the runner will run a javascript action with env / stdout protocol
-test("runs", () => {
-	// inputs
-	// process.env['INPUT_PREID-BRANCHES'] = 'master2' // should be false
-	process.env["INPUT_PREID-BRANCHES"] = "master,develop,feature/resusable-workflow" // should be true
-	process.env["INPUT_VERSION"] = "4.0.1"
-	process.env["INPUT_PREID"] = "rc"
-	process.env["INPUT_FORCE-PREID"] = "false"
-	process.env["INPUT_FORCE-STABLE"] = "false"
-	// envs
-	process.env["GITHUB_RUN_NUMBER"] = "23"
-	process.env["GITHUB_REF"] = "master"
+test("npm-auth runs", () => {
+	process.env["INPUT_SCOPE"] = "@arcane"
+	process.env["INPUT_REGISTRY"] = "https://f.feedz.io/sketch7/arcane/npm/"
+	process.env["INPUT_TOKEN"] = "test-token"
 	const np = process.execPath
 	const ip = path.join(__dirname, "..", "dist", "index.js")
 	const options: cp.ExecFileSyncOptions = {
-		env: process.env
+		env: process.env,
 	}
 	const result = cp.execFileSync(np, [ip], options).toString()
 	console.log(result)

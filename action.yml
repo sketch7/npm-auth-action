@@ -1,58 +1,24 @@
-name: "Version Builder"
-description: "Generates/modifies version number based on version, branch and settings."
+name: "npm auth"
+description: "Sets npm scope registry and auth token via `npm config set`."
 author: "Stephen Lautier"
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: "heart"
+  icon: "package"
   color: "red"
 
-# Define your inputs here.
 inputs:
-  version:
+  scope:
+    required: true
+    description: "npm scope to configure e.g. '@arcane' or 'arcane'."
+  registry:
+    required: true
+    description: "Registry URL to associate with the scope e.g. 'https://f.feedz.io/sketch7/arcane/npm/'."
+  token:
+    required: true
+    description: "Auth token for the registry."
+  config-dir:
     required: false
-    description: "Version to be used, if not specified will read from `package.json`."
-    # default: "default value if applicable"
-  force-preid:
-    required: false
-    description: "Forces preid versioning even if branch not satisfied."
-    default: "false"
-  force-stable:
-    required: false
-    description: "Forces non-preid versioning even if branch not satisfied."
-    default: "false"
-  preid-branches:
-    required: false
-    description: "Branches to be used for preid, as comma delimited to use for versioning
-      e.g. 'master,develop'."
-    default: "main,master,develop"
-  preid:
-    required: false
-    description: "Version preid to append e.g. 'dev', if not specified will read from
-      `package.json` or generated via branch name."
-    # default: "default value if applicable"
-  preid-num-delimiter:
-    required: false
-    description: "Delimiter for build number to use when using preid e.g. preid 'dev' with       `.` delimiter be '1.0.0-dev.123' ('dev.123')."
-    default: "."
-
-# Define your outputs here.
-outputs:
-  version:
-    description: "Build version generated e.g. '1.5.6-dev.123'."
-  nonSemverVersion:
-    description: "Omits the preid and returns just number e.g. '1.5.6'"
-  majorVersion:
-    description: "Returns the major version e.g. '1'"
-  minorVersion:
-    description: "Returns the minor version e.g. '5'"
-  patchVersion:
-    description: "Returns the patch version e.g. '6'"
-  preid:
-    description: "Returns the preid e.g. 'dev' based on preid, when isPrerelease else empty string."
-  isPrerelease:
-    description: "Returns whether the version is a prerelease version e.g. 'true' or
-      'false'."
+    description: "Directory path (relative to workspace) that contains the `.npmrc` to update (the `.npmrc` filename is appended automatically). When omitted the global user config is used."
 
 runs:
   using: "node24"

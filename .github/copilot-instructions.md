@@ -1,8 +1,8 @@
-# Copilot Instructions — version-builder-action
+# Copilot Instructions — npm-auth-action
 
 ## Project Overview
 
-A **GitHub Action** (Node 24, TypeScript) that generates or modifies semantic version numbers based on the current branch name, GitHub run number, and configuration flags. It is distributed as a single bundled `dist/index.js` file committed to the repository.
+A **GitHub Action** (Node 24, TypeScript) that configures npm scope registry and auth token via `npm config set`. It is distributed as a single bundled `dist/index.js` file committed to the repository.
 
 ## Tech Stack
 
@@ -28,11 +28,10 @@ pnpm run all            # format → lint → test → build (full pre-push pipe
 ## Architecture
 
 ```
-src/index.ts    — Action entry point; wraps run() with try/catch + core.setFailed()
-src/main.ts     — Core logic: reads version input (or package.json), builds semver with preid
-src/utils.ts    — Shared helpers: coerceArray(), isPrerelease()
-__tests__/      — Vitest tests (parametrized datasets)
-action.yml      — Action metadata: inputs, outputs, Node 24 runtime → dist/index.js
+src/index.ts    — Action entry point; catches errors and calls core.setFailed()
+src/main.ts     — Core logic: normalizeScope, normalizeRegistry, registryToAuthKey, run()
+__tests__/      — Vitest tests (parametrized with test.each)
+action.yml      — Action metadata: inputs (scope, registry, token, path), Node 24 runtime → dist/index.js
 dist/index.js   — Compiled bundle (MUST be committed; referenced by action.yml)
 ```
 
@@ -40,13 +39,13 @@ dist/index.js   — Compiled bundle (MUST be committed; referenced by action.yml
 
 - **Imports**: Named imports (`import { readFile } from "fs/promises"`); namespace imports for `@actions/*` (`import * as core from "@actions/core"`)
 - **Types**: No `any`; use strict interfaces; prefer inline object types for small shapes
-- **Tests**: Parametrized with a typed dataset array `{ name, input, expected }[]`, iterate with `test(\`given ${name}...\`)`; mock env vars via `process.env["INPUT_*"]`
-- **No floating promises**: wrap top-level async calls; the `run()` in `index.ts` uses `// eslint-disable-line` for the action runtime
+- **Tests**: Parametrized with `test.each([{ input, expected }])("given $input should be $expected", ...)` — no `name` field needed; mock action inputs via `process.env["INPUT_*"]`
+- **No floating promises**: `run()` in `index.ts` uses `.catch()` at the top level; do not add `await` at module scope
 
 ## Critical Notes
 
 1. **`dist/index.js` must be committed** — GitHub Actions executes it directly; it is not installed from npm.
 2. **All dependencies are bundled** — `tsdown.config.ts` uses `alwaysBundle: [/.*/]`; do not add runtime `require()` of external packages without verifying bundling.
 3. **Node 24 only** — `action.yml` declares `using: node24`; do not downgrade.
-4. **Default preid branches** — `["main", "master", "develop"]` if `preid-branches` input is omitted (see `src/main.ts`).
+4. **Token security** — always call `core.setSecret(token)` before using the token value anywhere.
 5. **After any logic change, run `pnpm run all`** to ensure format, lint, tests, and build all pass before committing.
