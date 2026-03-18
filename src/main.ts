@@ -18,7 +18,7 @@ export async function run(): Promise<void> {
 	const scope = core.getInput("scope", { required: true })
 	const registry = core.getInput("registry", { required: true })
 	const token = core.getInput("token", { required: true })
-	const configPath = core.getInput("path")
+	const configPath = core.getInput("config-dir")
 
 	core.setSecret(token)
 

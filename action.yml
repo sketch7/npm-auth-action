@@ -16,7 +16,7 @@ inputs:
   token:
     required: true
     description: "Auth token for the registry."
-  path:
+  config-dir:
     required: false
     description: "Directory path (relative to workspace) that contains the `.npmrc` to update (the `.npmrc` filename is appended automatically). When omitted the global user config is used."
 

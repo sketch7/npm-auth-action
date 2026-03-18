@@ -21,12 +21,12 @@ A GitHub Action that configures an npm scope registry and auth token via
 
 ## Inputs
 
-| Input      | Required | Description                                                                                                                                                    |
-| ---------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scope`    | Yes      | npm scope to configure (e.g. `@arcane` or `arcane`).                                                                                                           |
-| `registry` | Yes      | Registry URL to associate with the scope (e.g. `https://f.feedz.io/sketch7/arcane/npm/`).                                                                      |
-| `token`    | Yes      | Auth token for the registry.                                                                                                                                   |
-| `path`     | No       | Directory path (relative to workspace) that contains the `.npmrc` to update (the `.npmrc` filename is appended automatically). Omit to use global user config. |
+| Input        | Required | Description                                                                                                                                                    |
+| ------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scope`      | Yes      | npm scope to configure (e.g. `@arcane` or `arcane`).                                                                                                           |
+| `registry`   | Yes      | Registry URL to associate with the scope (e.g. `https://f.feedz.io/sketch7/arcane/npm/`).                                                                      |
+| `token`      | Yes      | Auth token for the registry.                                                                                                                                   |
+| `config-dir` | No       | Directory path (relative to workspace) that contains the `.npmrc` to update (the `.npmrc` filename is appended automatically). Omit to use global user config. |
 
 ## Usage
 
@@ -54,7 +54,7 @@ steps:
     scope: "@arcane"
     registry: "https://f.feedz.io/sketch7/arcane/npm/"
     token: ${{ secrets.NPM_TOKEN }}
-    path: "packages/my-app"
+    config-dir: "packages/my-app"
 ```
 
 ## Publishing a New Release
