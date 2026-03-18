@@ -16855,31 +16855,12 @@ function info(message) {
 
 //#endregion
 //#region src/main.ts
-function normalizeScope(scope) {
-	return scope.startsWith("@") ? scope : `@${scope}`;
-}
-function normalizeRegistry(registry) {
-	return registry.endsWith("/") ? registry : `${registry}/`;
-}
-function registryToAuthKey(registry) {
-	return normalizeRegistry(registry).replace(/^https?:/, "");
-}
-async function resolveScopeFromPackageJson(packageJsonPath) {
-	try {
-		const content = await (0, fs_promises.readFile)(packageJsonPath, "utf-8");
-		const pkg = JSON.parse(content);
-		if (!pkg.name?.startsWith("@")) return null;
-		return pkg.name.split("/")[0] ?? null;
-	} catch {
-		return null;
-	}
-}
 async function run() {
 	let scope = getInput("scope");
 	const registry = getInput("registry", { required: true });
 	const token = getInput("token", { required: true });
 	const configPath = getInput("config-dir");
-	const packageJsonDir = getInput("package-json-path");
+	const packageJsonDir = getInput("package-json-dir");
 	setSecret(token);
 	if (!scope) {
 		const packageJsonPath = (0, path.resolve)(process.cwd(), packageJsonDir || ".", "package.json");
@@ -16907,6 +16888,25 @@ async function run() {
 		token,
 		...userConfigArgs
 	]);
+}
+function normalizeScope(scope) {
+	return scope.startsWith("@") ? scope : `@${scope}`;
+}
+function normalizeRegistry(registry) {
+	return registry.endsWith("/") ? registry : `${registry}/`;
+}
+function registryToAuthKey(registry) {
+	return normalizeRegistry(registry).replace(/^https?:/, "");
+}
+async function resolveScopeFromPackageJson(packageJsonPath) {
+	try {
+		const content = await (0, fs_promises.readFile)(packageJsonPath, "utf-8");
+		const pkg = JSON.parse(content);
+		if (!pkg.name?.startsWith("@")) return null;
+		return pkg.name.split("/")[0] ?? null;
+	} catch {
+		return null;
+	}
 }
 
 //#endregion
