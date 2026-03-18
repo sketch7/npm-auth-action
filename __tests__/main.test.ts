@@ -2,83 +2,91 @@ import * as cp from "child_process"
 import * as path from "path"
 import * as process from "process"
 import { describe, expect, test } from "vitest"
-import { isPrerelease } from "../src/utils"
+import { normalizeScope, normalizeRegistry, registryToAuthKey } from "../src/main"
 
-describe("isPrerelease", () => {
+describe("normalizeScope", () => {
 	const dataset = [
-		// prerelease
 		{
-			name: "Preid branch match",
-			input: {
-				branch: "master",
-				preidBranches: ["master", "develop"],
-				isForcePreid: false,
-				isForceStable: false
-			},
-			expected: true
+			name: "scope without @ prefix",
+			input: "arcane",
+			expected: "@arcane"
 		},
 		{
-			name: "Force preid",
-			input: {
-				branch: "ci",
-				preidBranches: ["master", "develop"],
-				isForcePreid: true,
-				isForceStable: false
-			},
-			expected: true
+			name: "scope already has @ prefix",
+			input: "@arcane",
+			expected: "@arcane"
 		},
 		{
-			name: "Force preid > force stable",
-			input: {
-				branch: "ci",
-				preidBranches: ["master", "develop"],
-				isForcePreid: true,
-				isForceStable: true
-			},
-			expected: true
-		},
-		// stable
-		{
-			name: "Non matching preid branch",
-			input: {
-				branch: "master",
-				preidBranches: ["develop"],
-				isForcePreid: false,
-				isForceStable: false
-			},
-			expected: false
-		},
-		{
-			name: "Force stable",
-			input: {
-				branch: "master",
-				preidBranches: ["master"],
-				isForcePreid: false,
-				isForceStable: true
-			},
-			expected: false
+			name: "scope with uppercase",
+			input: "MyOrg",
+			expected: "@MyOrg"
 		}
 	]
 
 	for (const { name, input, expected } of dataset) {
 		test(`given ${name} (${JSON.stringify(input)}) should be ${expected}`, () => {
-			expect(isPrerelease(input)).toBe(expected)
+			expect(normalizeScope(input)).toBe(expected)
+		})
+	}
+})
+
+describe("normalizeRegistry", () => {
+	const dataset = [
+		{
+			name: "registry without trailing slash",
+			input: "https://f.feedz.io/sketch7/arcane/npm",
+			expected: "https://f.feedz.io/sketch7/arcane/npm/"
+		},
+		{
+			name: "registry already has trailing slash",
+			input: "https://f.feedz.io/sketch7/arcane/npm/",
+			expected: "https://f.feedz.io/sketch7/arcane/npm/"
+		},
+		{
+			name: "http registry without trailing slash",
+			input: "http://registry.example.com/npm",
+			expected: "http://registry.example.com/npm/"
+		}
+	]
+
+	for (const { name, input, expected } of dataset) {
+		test(`given ${name} (${JSON.stringify(input)}) should be ${expected}`, () => {
+			expect(normalizeRegistry(input)).toBe(expected)
+		})
+	}
+})
+
+describe("registryToAuthKey", () => {
+	const dataset = [
+		{
+			name: "https registry",
+			input: "https://f.feedz.io/sketch7/arcane/npm/",
+			expected: "//f.feedz.io/sketch7/arcane/npm/"
+		},
+		{
+			name: "http registry",
+			input: "http://registry.example.com/npm/",
+			expected: "//registry.example.com/npm/"
+		},
+		{
+			name: "https registry without trailing slash",
+			input: "https://f.feedz.io/sketch7/arcane/npm",
+			expected: "//f.feedz.io/sketch7/arcane/npm/"
+		}
+	]
+
+	for (const { name, input, expected } of dataset) {
+		test(`given ${name} (${JSON.stringify(input)}) should be ${expected}`, () => {
+			expect(registryToAuthKey(input)).toBe(expected)
 		})
 	}
 })
 
 // shows how the runner will run a javascript action with env / stdout protocol
-test("runs", () => {
-	// inputs
-	// process.env['INPUT_PREID-BRANCHES'] = 'master2' // should be false
-	process.env["INPUT_PREID-BRANCHES"] = "master,develop,feature/resusable-workflow" // should be true
-	process.env["INPUT_VERSION"] = "4.0.1"
-	process.env["INPUT_PREID"] = "rc"
-	process.env["INPUT_FORCE-PREID"] = "false"
-	process.env["INPUT_FORCE-STABLE"] = "false"
-	// envs
-	process.env["GITHUB_RUN_NUMBER"] = "23"
-	process.env["GITHUB_REF"] = "master"
+test("npm-auth runs", () => {
+	process.env["INPUT_SCOPE"] = "@arcane"
+	process.env["INPUT_REGISTRY"] = "https://f.feedz.io/sketch7/arcane/npm/"
+	process.env["INPUT_TOKEN"] = "test-token"
 	const np = process.execPath
 	const ip = path.join(__dirname, "..", "dist", "index.js")
 	const options: cp.ExecFileSyncOptions = {
