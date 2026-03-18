@@ -2,11 +2,9 @@ import * as core from "@actions/core"
 
 import { run } from "./main"
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 run().catch(error => {
-	if (error instanceof Error) {
-		core.setFailed(error.message)
-	} else {
-		core.setFailed(String(error ?? "Unknown error"))
-	}
-})
+	const message = error instanceof Error
+		? error.message
+		: String(error ?? "Unknown error")
+	core.setFailed(message)
+});
