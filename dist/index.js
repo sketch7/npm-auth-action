@@ -16867,7 +16867,7 @@ async function run() {
 	const scope = getInput("scope", { required: true });
 	const registry = getInput("registry", { required: true });
 	const token = getInput("token", { required: true });
-	const configPath = getInput("path");
+	const configPath = getInput("config-dir");
 	setSecret(token);
 	const normalizedScope = normalizeScope(scope);
 	const normalizedRegistry = normalizeRegistry(registry);
@@ -16893,7 +16893,8 @@ async function run() {
 //#endregion
 //#region src/index.ts
 run().catch((error) => {
-	if (error instanceof Error) setFailed(error.message);
+	const message = error instanceof Error ? error.message : String(error ?? "Unknown error");
+	setFailed(message);
 });
 
 //#endregion
