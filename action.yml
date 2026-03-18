@@ -7,15 +7,18 @@ branding:
   color: "red"
 
 inputs:
-  scope:
-    required: true
-    description: "npm scope to configure e.g. '@arcane' or 'arcane'."
   registry:
     required: true
     description: "Registry URL to associate with the scope e.g. 'https://f.feedz.io/sketch7/arcane/npm/'."
   token:
     required: true
     description: "Auth token for the registry."
+  scope:
+    required: false
+    description: "npm scope to configure e.g. '@arcane' or 'arcane'. When omitted, the scope is resolved from the `name` field in `package.json`."
+  package-json-dir:
+    required: false
+    description: "Directory path (relative to workspace) that contains the `package.json` to resolve the scope from. Defaults to the workspace root. Only used when `scope` is not provided."
   config-dir:
     required: false
     description: "Directory path (relative to workspace) that contains the `.npmrc` to update (the `.npmrc` filename is appended automatically). When omitted the global user config is used."

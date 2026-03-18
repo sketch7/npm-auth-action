@@ -1,8 +1,10 @@
 import * as cp from "child_process"
+import * as fs from "fs"
+import * as os from "os"
 import * as path from "path"
 import * as process from "process"
-import { describe, expect, test } from "vitest"
-import { normalizeScope, normalizeRegistry, registryToAuthKey } from "../src/main"
+import { afterEach, beforeEach, describe, expect, test } from "vitest"
+import { normalizeScope, normalizeRegistry, registryToAuthKey, resolveScopeFromPackageJson } from "../src/main"
 
 describe("normalizeScope", () => {
 	test.each([
@@ -31,6 +33,38 @@ describe("registryToAuthKey", () => {
 		{ input: "https://f.feedz.io/sketch7/arcane/npm", expected: "//f.feedz.io/sketch7/arcane/npm/" },
 	])("given $input should be $expected", ({ input, expected }) => {
 		expect(registryToAuthKey(input)).toBe(expected)
+	})
+})
+
+describe("resolveScopeFromPackageJson", () => {
+	let tmpDir: string
+
+	beforeEach(() => {
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "npm-auth-action-test-"))
+	})
+
+	afterEach(() => {
+		fs.rmSync(tmpDir, { recursive: true })
+	})
+
+	test.each([
+		{ name: "@arcane/my-package", expected: "@arcane" },
+		{ name: "@my-org/something", expected: "@my-org" },
+		{ name: "unscoped-package", expected: null },
+	])("given package name $name should resolve scope $expected", async ({ name, expected }) => {
+		const pkgJsonPath = path.join(tmpDir, "package.json")
+		fs.writeFileSync(pkgJsonPath, JSON.stringify({ name }))
+		await expect(resolveScopeFromPackageJson(pkgJsonPath)).resolves.toBe(expected)
+	})
+
+	test("returns null when name field is absent", async () => {
+		const pkgJsonPath = path.join(tmpDir, "package.json")
+		fs.writeFileSync(pkgJsonPath, JSON.stringify({}))
+		await expect(resolveScopeFromPackageJson(pkgJsonPath)).resolves.toBeNull()
+	})
+
+	test("returns null when file does not exist", async () => {
+		await expect(resolveScopeFromPackageJson(path.join(tmpDir, "nonexistent.json"))).resolves.toBeNull()
 	})
 })
 
