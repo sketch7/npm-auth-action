@@ -1,0 +1,54 @@
+{
+  "name": "@ssv/version-builder-action",
+  "version": "1.4.0",
+  "private": true,
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "author": "Stephen Lautier <stephen.lautier@outlook.com>",
+  "license": "MIT",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "ci-test": "vitest run --coverage",
+    "format:check": "oxfmt --check",
+    "format:write": "oxfmt --write",
+    "lint": "oxlint --tsconfig=./tsconfig.json src __tests__",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "all": "pnpm run format:write && pnpm run lint && pnpm run test && pnpm run build"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@vitest/coverage-v8": "^4.1.0",
+    "oxfmt": "^0.41.0",
+    "oxlint": "^1.56.0",
+    "tsdown": "^0.21.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  },
+  "keywords": [
+    "actions",
+    "autoversion",
+    "node",
+    "semver",
+    "setup",
+    "version"
+  ],
+  "homepage": "https://github.com/sketch7/version-builder-action",
+  "bugs": {
+    "url": "https://github.com/sketch7/version-builder-action/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sketch7/version-builder-action.git"
+  }
+}
