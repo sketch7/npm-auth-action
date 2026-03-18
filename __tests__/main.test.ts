@@ -5,81 +5,33 @@ import { describe, expect, test } from "vitest"
 import { normalizeScope, normalizeRegistry, registryToAuthKey } from "../src/main"
 
 describe("normalizeScope", () => {
-	const dataset = [
-		{
-			name: "scope without @ prefix",
-			input: "arcane",
-			expected: "@arcane"
-		},
-		{
-			name: "scope already has @ prefix",
-			input: "@arcane",
-			expected: "@arcane"
-		},
-		{
-			name: "scope with uppercase",
-			input: "MyOrg",
-			expected: "@MyOrg"
-		}
-	]
-
-	for (const { name, input, expected } of dataset) {
-		test(`given ${name} (${JSON.stringify(input)}) should be ${expected}`, () => {
-			expect(normalizeScope(input)).toBe(expected)
-		})
-	}
+	test.each([
+		{ input: "arcane", expected: "@arcane" },
+		{ input: "@arcane", expected: "@arcane" },
+		{ input: "MyOrg", expected: "@MyOrg" },
+	])("given $input should be $expected", ({ input, expected }) => {
+		expect(normalizeScope(input)).toBe(expected)
+	})
 })
 
 describe("normalizeRegistry", () => {
-	const dataset = [
-		{
-			name: "registry without trailing slash",
-			input: "https://f.feedz.io/sketch7/arcane/npm",
-			expected: "https://f.feedz.io/sketch7/arcane/npm/"
-		},
-		{
-			name: "registry already has trailing slash",
-			input: "https://f.feedz.io/sketch7/arcane/npm/",
-			expected: "https://f.feedz.io/sketch7/arcane/npm/"
-		},
-		{
-			name: "http registry without trailing slash",
-			input: "http://registry.example.com/npm",
-			expected: "http://registry.example.com/npm/"
-		}
-	]
-
-	for (const { name, input, expected } of dataset) {
-		test(`given ${name} (${JSON.stringify(input)}) should be ${expected}`, () => {
-			expect(normalizeRegistry(input)).toBe(expected)
-		})
-	}
+	test.each([
+		{ input: "https://f.feedz.io/sketch7/arcane/npm", expected: "https://f.feedz.io/sketch7/arcane/npm/" },
+		{ input: "https://f.feedz.io/sketch7/arcane/npm/", expected: "https://f.feedz.io/sketch7/arcane/npm/" },
+		{ input: "http://registry.example.com/npm", expected: "http://registry.example.com/npm/" },
+	])("given $input should be $expected", ({ input, expected }) => {
+		expect(normalizeRegistry(input)).toBe(expected)
+	})
 })
 
 describe("registryToAuthKey", () => {
-	const dataset = [
-		{
-			name: "https registry",
-			input: "https://f.feedz.io/sketch7/arcane/npm/",
-			expected: "//f.feedz.io/sketch7/arcane/npm/"
-		},
-		{
-			name: "http registry",
-			input: "http://registry.example.com/npm/",
-			expected: "//registry.example.com/npm/"
-		},
-		{
-			name: "https registry without trailing slash",
-			input: "https://f.feedz.io/sketch7/arcane/npm",
-			expected: "//f.feedz.io/sketch7/arcane/npm/"
-		}
-	]
-
-	for (const { name, input, expected } of dataset) {
-		test(`given ${name} (${JSON.stringify(input)}) should be ${expected}`, () => {
-			expect(registryToAuthKey(input)).toBe(expected)
-		})
-	}
+	test.each([
+		{ input: "https://f.feedz.io/sketch7/arcane/npm/", expected: "//f.feedz.io/sketch7/arcane/npm/" },
+		{ input: "http://registry.example.com/npm/", expected: "//registry.example.com/npm/" },
+		{ input: "https://f.feedz.io/sketch7/arcane/npm", expected: "//f.feedz.io/sketch7/arcane/npm/" },
+	])("given $input should be $expected", ({ input, expected }) => {
+		expect(registryToAuthKey(input)).toBe(expected)
+	})
 })
 
 // shows how the runner will run a javascript action with env / stdout protocol
