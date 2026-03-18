@@ -6,31 +6,35 @@ A GitHub Action that configures an npm scope registry and auth token via
 
 ## How It Works
 
-1. Normalizes the scope — adds the `@` prefix if omitted (`arcane` → `@arcane`).
-2. Normalizes the registry URL — ensures a trailing slash.
-3. Derives the auth key by stripping the `http(s):` scheme from the registry
+1. Resolves the scope — uses the `scope` input directly, or auto-resolves it
+   from the `name` field in `package.json` (e.g. `"name": "@arcane/my-app"`
+   → `@arcane`). Fails if neither is available.
+2. Normalizes the scope — adds the `@` prefix if omitted (`arcane` → `@arcane`).
+3. Normalizes the registry URL — ensures a trailing slash.
+4. Derives the auth key by stripping the `http(s):` scheme from the registry
    URL (e.g. `https://f.feedz.io/sketch7/arcane/npm/` →
    `//f.feedz.io/sketch7/arcane/npm/`).
-4. Runs:
+5. Runs:
    ```
    npm config set @scope:registry <registry>
    npm config set //<registry-host-and-path>:_authToken <token>
    ```
-   When `path` is provided both commands receive `--userconfig <path>/.npmrc`
+   When `config-dir` is provided both commands receive `--userconfig <config-dir>/.npmrc`
    so only that project's config is affected.
 
 ## Inputs
 
-| Input        | Required | Description                                                                                                                                                    |
-| ------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scope`      | Yes      | npm scope to configure (e.g. `@arcane` or `arcane`).                                                                                                           |
-| `registry`   | Yes      | Registry URL to associate with the scope (e.g. `https://f.feedz.io/sketch7/arcane/npm/`).                                                                      |
-| `token`      | Yes      | Auth token for the registry.                                                                                                                                   |
-| `config-dir` | No       | Directory path (relative to workspace) that contains the `.npmrc` to update (the `.npmrc` filename is appended automatically). Omit to use global user config. |
+| Input              | Required | Description                                                                                                                                                             |
+| ------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `registry`         | Yes      | Registry URL to associate with the scope (e.g. `https://f.feedz.io/sketch7/arcane/npm/`).                                                                               |
+| `token`            | Yes      | Auth token for the registry.                                                                                                                                            |
+| `scope`            | No       | npm scope to configure (e.g. `@arcane` or `arcane`). When omitted, the scope is auto-resolved from the `name` field in `package.json`.                                  |
+| `package-json-dir` | No       | Directory path (relative to workspace) containing the `package.json` to resolve the scope from. Defaults to the workspace root. Only used when `scope` is not provided. |
+| `config-dir`       | No       | Directory path (relative to workspace) that contains the `.npmrc` to update (the `.npmrc` filename is appended automatically). Omit to use global user config.          |
 
 ## Usage
 
-### Basic — global npm config
+### Scope auto-resolved from `package.json`
 
 ```yaml
 steps:
@@ -40,9 +44,19 @@ steps:
   - name: Configure npm auth
     uses: sketch7/npm-auth-action@v1
     with:
-      scope: "@arcane"
       registry: "https://f.feedz.io/sketch7/arcane/npm/"
       token: ${{ secrets.NPM_TOKEN }}
+```
+
+### Explicit scope
+
+```yaml
+- name: Configure npm auth
+  uses: sketch7/npm-auth-action@v1
+  with:
+    scope: "@arcane"
+    registry: "https://f.feedz.io/sketch7/arcane/npm/"
+    token: ${{ secrets.NPM_TOKEN }}
 ```
 
 ### Project-level `.npmrc`
@@ -51,10 +65,20 @@ steps:
 - name: Configure npm auth (project)
   uses: sketch7/npm-auth-action@v1
   with:
-    scope: "@arcane"
     registry: "https://f.feedz.io/sketch7/arcane/npm/"
     token: ${{ secrets.NPM_TOKEN }}
     config-dir: "packages/my-app"
+```
+
+### Scope resolved from a nested `package.json`
+
+```yaml
+- name: Configure npm auth
+  uses: sketch7/npm-auth-action@v1
+  with:
+    registry: "https://f.feedz.io/sketch7/arcane/npm/"
+    token: ${{ secrets.NPM_TOKEN }}
+    package-json-dir: "packages/my-app"
 ```
 
 ## Publishing a New Release

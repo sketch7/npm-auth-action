@@ -37,6 +37,7 @@ events = __toESM(events);
 let child_process = require("child_process");
 child_process = __toESM(child_process);
 let timers = require("timers");
+let fs_promises = require("fs/promises");
 
 //#region node_modules/.pnpm/@actions+core@3.0.0/node_modules/@actions/core/lib/utils.js
 /**
@@ -16854,21 +16855,20 @@ function info(message) {
 
 //#endregion
 //#region src/main.ts
-function normalizeScope(scope) {
-	return scope.startsWith("@") ? scope : `@${scope}`;
-}
-function normalizeRegistry(registry) {
-	return registry.endsWith("/") ? registry : `${registry}/`;
-}
-function registryToAuthKey(registry) {
-	return normalizeRegistry(registry).replace(/^https?:/, "");
-}
 async function run() {
-	const scope = getInput("scope", { required: true });
+	let scope = getInput("scope");
 	const registry = getInput("registry", { required: true });
 	const token = getInput("token", { required: true });
 	const configPath = getInput("config-dir");
+	const packageJsonDir = getInput("package-json-dir");
 	setSecret(token);
+	if (!scope) {
+		const packageJsonPath = (0, path.resolve)(process.cwd(), packageJsonDir || ".", "package.json");
+		info(`Scope not provided, resolving from ${packageJsonPath}`);
+		scope = await resolveScopeFromPackageJson(packageJsonPath) ?? "";
+		if (!scope) throw new Error(`Scope was not provided and could not be resolved from '${packageJsonPath}'. Ensure the package.json has a scoped name (e.g. "@scope/package-name") or provide the 'scope' input.`);
+		info(`Resolved scope '${scope}' from package.json`);
+	}
 	const normalizedScope = normalizeScope(scope);
 	const normalizedRegistry = normalizeRegistry(registry);
 	const authKey = registryToAuthKey(registry);
@@ -16888,6 +16888,25 @@ async function run() {
 		token,
 		...userConfigArgs
 	]);
+}
+function normalizeScope(scope) {
+	return scope.startsWith("@") ? scope : `@${scope}`;
+}
+function normalizeRegistry(registry) {
+	return registry.endsWith("/") ? registry : `${registry}/`;
+}
+function registryToAuthKey(registry) {
+	return normalizeRegistry(registry).replace(/^https?:/, "");
+}
+async function resolveScopeFromPackageJson(packageJsonPath) {
+	try {
+		const content = await (0, fs_promises.readFile)(packageJsonPath, "utf-8");
+		const pkg = JSON.parse(content);
+		if (!pkg.name?.startsWith("@")) return null;
+		return pkg.name.split("/")[0] ?? null;
+	} catch {
+		return null;
+	}
 }
 
 //#endregion
