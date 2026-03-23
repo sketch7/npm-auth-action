@@ -75,7 +75,7 @@ test("npm-auth runs", () => {
 	process.env["INPUT_REGISTRY"] = "https://f.feedz.io/sketch7/arcane/npm/";
 	process.env["INPUT_TOKEN"] = "test-token";
 	const np = process.execPath;
-	const ip = path.join(__dirname, "..", "dist", "index.js");
+	const ip = path.join(__dirname, "..", "dist", "index.mjs");
 	const options: cp.ExecFileSyncOptions = {
 		env: process.env,
 	};
