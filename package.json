@@ -2,21 +2,33 @@
   "name": "@ssv/npm-auth-action",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@10.32.1",
-  "engines": {
-    "node": ">=24"
+  "keywords": [
+    "actions",
+    "node",
+    "npm auth",
+    "npmrc",
+    "npmrc auth"
+  ],
+  "homepage": "https://github.com/sketch7/npm-auth-action",
+  "bugs": {
+    "url": "https://github.com/sketch7/npm-auth-action/issues"
   },
-  "author": "Stephen Lautier <stephen.lautier@outlook.com>",
   "license": "MIT",
+  "author": "Stephen Lautier <stephen.lautier@outlook.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sketch7/npm-auth-action.git"
+  },
+  "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.mjs"
   },
   "scripts": {
     "build": "tsdown",
     "build:watch": "tsdown --watch",
     "ci-test": "vitest run --coverage",
+    "format": "oxfmt --write",
     "format:check": "oxfmt --check",
-    "format:write": "oxfmt --write",
     "lint": "oxlint --tsconfig=./tsconfig.json src __tests__",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -35,19 +47,8 @@
     "typescript": "^5.9.3",
     "vitest": "^4.1.0"
   },
-  "keywords": [
-    "actions",
-    "npm auth",
-    "node",
-    "npmrc",
-    "npmrc auth"
-  ],
-  "homepage": "https://github.com/sketch7/npm-auth-action",
-  "bugs": {
-    "url": "https://github.com/sketch7/npm-auth-action/issues"
+  "engines": {
+    "node": ">=24"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sketch7/npm-auth-action.git"
-  }
+  "packageManager": "pnpm@10.32.1"
 }
